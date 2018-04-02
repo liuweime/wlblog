@@ -72,9 +72,51 @@ class ArticleService
         return $bool;
     }
 
+    /**
+     * 保存文章内容
+     * @param ArticleRequest $articleRequest
+     * @return bool
+     * @throws ArticleException
+     * @throws CategoryException
+     */
     public function saveArticle(ArticleRequest $articleRequest) : bool
     {
         // 保存文章
+
+        // 判断article_id是否存在
+        $articleOld = $this->articleRepository->getOneArticleByCondition([
+            ['id', $articleRequest->input('article_id')]
+        ],['id']);
+        if (is_null($articleOld)) {
+            throw new ArticleException('ARTICLE_NOT_FOUND');
+        }
+
+        // 判断分类是否修改
+        if (!empty($articleRequest->input('category_id')) &&
+            $articleOld->category_id !== $articleRequest->input('category_id')) {
+            // 检测分类是否合法
+            $bool = $this->categoryRepository->isExistsCategoryId($articleRequest->input('category_id'));
+            if (false === $bool) {
+                throw new CategoryException('CATEGORY_EXISTS');
+            }
+        }
+        $articleArr = $articleRequest->all();
+        $bool = $this->articleRepository->saveArticle($articleOld, $articleArr);
+        if (false === $bool) {
+            throw new ArticleException('SAVE_ARTICLE_ERROR');
+        }
+
+        // 保存文章内容
+        $title = $articleOld->article_title;
+        if (!empty($articleArr['article_title'])
+            && $articleArr['article_title'] !== $articleOld->article_title) {
+
+            $this->renameMarkdownFile($articleOld->author_name, $articleOld->article_title, $articleArr['article_title']);
+
+            $title = $articleArr['article_title'];
+        }
+
+        return $this->createMarkdownFile($articleOld->author_name, $title, $articleArr['article_content']);
     }
 
     /**
@@ -132,4 +174,29 @@ class ArticleService
             . md5($username) . DIRECTORY_SEPARATOR;
     }
 
+    /**
+     * @param string $username
+     * @param string $oldtitle
+     * @param string $newtitle
+     * @throws ArticleException
+     */
+    protected function renameMarkdownFile(string $username, string $oldtitle, string $newtitle)
+    {
+        try {
+            // 文件路径
+            $dir = $this->getMarkdownFilePath($username);
+            if (false === is_dir($dir)) {
+                mkdir($dir, 755);
+            }
+            $oldfile = $dir . $oldtitle . '.md';
+            $newfile = $dir . $newtitle . '.md';
+
+            $bool = rename($oldfile, $newfile);
+            if (false === $bool) {
+                throw new \Exception('rename old title error');
+            }
+        } catch (\Exception $exception) {
+            throw new ArticleException($exception->getMessage());
+        }
+    }
 }
