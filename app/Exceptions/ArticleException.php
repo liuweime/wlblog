@@ -8,18 +8,8 @@
 
 namespace App\Exceptions;
 
-
-use Exception;
-
-class ArticleException extends Exception
+class ArticleException extends LogicException
 {
-    public function report()
-    {
-
-    }
-
-    public function render($request)
-    {
-
-    }
+    protected $name = 'article';
+    protected $code = '01';
 }
