@@ -25,7 +25,11 @@ class LogicException extends Exception
         $exceptionConfig = config('exception.' . $exceptionName);
 
         // 读取错误信息
-        list($info, $format) = $message;
+        $info = array_shift($message);
+        $format = '';
+        if (!empty($message)) {
+            $format = $message;
+        }
         $info = $exceptionConfig[$info];
         // 格式化
         $msg = sprintf($info[1], $format);
