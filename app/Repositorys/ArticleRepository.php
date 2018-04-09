@@ -9,6 +9,7 @@
 namespace App\Repositorys;
 
 
+use App\Exceptions\ArticleException;
 use App\Model\Article;
 
 class ArticleRepository
@@ -66,9 +67,13 @@ class ArticleRepository
      * 创建一篇文章
      * @param array $articleArr
      * @return bool
+     * @throws ArticleException
      */
     public function createArticle(array $articleArr) : bool
     {
+        if (empty($articleArr['article_title'])) {
+            throw new ArticleException(['ARTICLE_TITLE_NOT_EMPTY']);
+        }
         $this->article->article_title = $articleArr['article_title'];
         $this->article->author_id = $articleArr['author_id'];
         $this->article->author_name = $articleArr['author_name'];

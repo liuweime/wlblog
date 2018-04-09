@@ -8,18 +8,8 @@
 
 namespace App\Exceptions;
 
-
-use Exception;
-
-class CategoryException extends Exception
+class CategoryException extends LogicException
 {
-    public function report()
-    {
-
-    }
-
-    public function render($request)
-    {
-
-    }
+    protected $name = 'category';
+    protected $code = '02';
 }
