@@ -35,4 +35,14 @@ class CategoryRepository
             $this->category->where('id', $categoryId)->select('id')->first()
         ) ? false : true;
     }
+
+    /**
+     * 根据id获取分类名称
+     * @param int $categoryId
+     * @return mixed
+     */
+    public function getCategoryNameById(int $categoryId)
+    {
+        return $this->category->where('id', $categoryId)->select('category_name')->first();
+    }
 }

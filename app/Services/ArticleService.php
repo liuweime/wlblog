@@ -12,8 +12,10 @@ namespace App\Services;
 use App\Exceptions\ArticleException;
 use App\Exceptions\CategoryException;
 use App\Http\Requests\ArticleRequest;
+use App\Model\Article;
 use App\Repositorys\ArticleRepository;
 use App\Repositorys\CategoryRepository;
+use Exception;
 use Illuminate\Support\Facades\Auth;
 
 class ArticleService
@@ -35,10 +37,12 @@ class ArticleService
     }
 
     /**
+     * 创建一篇文章
      * @param ArticleRequest $articleRequest
      * @return bool
      * @throws ArticleException
      * @throws CategoryException
+     * @throws Exception
      */
     public function createArticle(ArticleRequest $articleRequest)
     {
@@ -54,7 +58,7 @@ class ArticleService
         // 检测分类
         $bool = $this->categoryRepository->isExistsCategoryId($articleRequest->input('category_id'));
         if (false === $bool) {
-            throw new CategoryException('CATEGORY_EXISTS');
+            throw new CategoryException(['CATEGORY_NOT_EXISTS']);
         }
 
         // 创建文章
@@ -78,17 +82,15 @@ class ArticleService
      * @return bool
      * @throws ArticleException
      * @throws CategoryException
+     * @throws Exception
      */
-    public function saveArticle(ArticleRequest $articleRequest) : bool
+    public function saveArticle(ArticleRequest $articleRequest, int $articleId) : bool
     {
-        // 保存文章
-
+        $user = Auth::user();
         // 判断article_id是否存在
-        $articleOld = $this->articleRepository->getOneArticleByCondition([
-            ['id', $articleRequest->input('article_id')]
-        ],['id']);
+        $articleOld = $this->articleRepository->getOneArticleById($articleId, $user['user_id']);
         if (is_null($articleOld)) {
-            throw new ArticleException('ARTICLE_NOT_FOUND');
+            throw new ArticleException(['ARTICLE_NOT_FOUND']);
         }
 
         // 判断分类是否修改
@@ -97,13 +99,13 @@ class ArticleService
             // 检测分类是否合法
             $bool = $this->categoryRepository->isExistsCategoryId($articleRequest->input('category_id'));
             if (false === $bool) {
-                throw new CategoryException('CATEGORY_EXISTS');
+                throw new CategoryException(['CATEGORY_NOT_EXISTS', $articleRequest->input('category_id')]);
             }
         }
         $articleArr = $articleRequest->all();
         $bool = $this->articleRepository->saveArticle($articleOld, $articleArr);
         if (false === $bool) {
-            throw new ArticleException('SAVE_ARTICLE_ERROR');
+            throw new ArticleException(['SAVE_ARTICLE_ERROR']);
         }
 
         // 保存文章内容
@@ -120,13 +122,88 @@ class ArticleService
     }
 
     /**
+     * @throws ArticleException
+     */
+    public function getArticleList()
+    {
+        $user = Auth::user();
+
+        $articleList = $this->articleRepository->getArticleByAuthorId($user['user_id']);
+        foreach ($articleList as $key => $article) {
+            $article = $this->parseArticleData($article);
+
+            $articleList[$key] = $article;
+        }
+    }
+
+    /**
+     * @param int $id
+     * @return mixed
+     * @throws ArticleException
+     */
+    public function getArticle(int $id)
+    {
+        // 获取文章
+        $article = $this->articleRepository->getOneArticleById($id);
+        if (is_null($article)) {
+            throw new ArticleException(['ARTICLE_NOT_FOUND']);
+        }
+        // 获取文章分类
+        $categoryName = $this->categoryRepository->getCategoryNameById($article->category_id);
+        $article->category_name = '';
+        if (!is_null($categoryName)) {
+            $article->category_name = $categoryName;
+        }
+
+        return $article;
+    }
+
+    /**
+     * 格式化文章内容
+     * @param \stdClass $article
+     * @return \stdClass
+     * @throws ArticleException
+     */
+    private function parseArticleData(\stdClass $article)
+    {
+        // 文章标签
+        if ($article->article_tag) {
+            $article->article_tag = explode(',', $article->article_tag);
+        }
+        // 类型
+        switch ($article->article_type) {
+            case Article::ARTICLE_TYPE_ORIGINAL:
+                $article->article_type_text = '原创';
+                break;
+            case Article::ARTICLE_TYPE_REPRODUCED:
+                $article->article_type_text = '转载';
+                break;
+            case Article::ARTICLE_TYPE_TRANSLATION:
+                $article->article_type_text = '翻译';
+                break;
+            default:
+                $article->article_type_text = '未知';
+                break;
+        }
+        // 获取文章内容
+        $user = Auth::user();
+        $content = $this->readMakrdownFileContent($user['user_name'], $article->article_title);
+        $article->content = '';
+        if (!empty($content)) {
+            $article->content = $content;
+        }
+
+        return $article;
+    }
+
+    /**
      * 生成markdown文件
      *
      * @param string $username
      * @param string $title
      * @param string $content
      * @return bool
-     * @throws ArticleException
+     * @throws Exception
      */
     protected function createMarkdownFile(string $username, string $title, string $content) : bool
     {
@@ -140,7 +217,7 @@ class ArticleService
             return false === file_put_contents($filepath, $content, LOCK_EX)
                 ? false : true;
         } catch (\Exception $exception) {
-            throw new ArticleException($exception->getMessage());
+            throw new Exception($exception->getMessage());
         }
     }
 
@@ -157,7 +234,7 @@ class ArticleService
         $filepath = $filedir . $title . '.md';
 
         if (!file_exists($filepath)) {
-            throw new ArticleException('MARKDOWN_FILE_NOT_FOUND');
+            throw new ArticleException(['MARKDOWN_FILE_NOT_FOUND']);
         }
 
         return file_get_contents($filepath);
@@ -178,7 +255,7 @@ class ArticleService
      * @param string $username
      * @param string $oldtitle
      * @param string $newtitle
-     * @throws ArticleException
+     * @throws Exception
      */
     protected function renameMarkdownFile(string $username, string $oldtitle, string $newtitle)
     {
@@ -196,7 +273,7 @@ class ArticleService
                 throw new \Exception('rename old title error');
             }
         } catch (\Exception $exception) {
-            throw new ArticleException($exception->getMessage());
+            throw new Exception($exception->getMessage());
         }
     }
 }

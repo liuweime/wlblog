@@ -14,5 +14,9 @@ class Article extends Model
     const ARTICLE_SAVE_PUBLISH = 5;                             // 保存发布
     const ARTICLE_SAVE_AUDIT   = 6;                             // 保存待审
 
+    const ARTICLE_TYPE_ORIGINAL = 0;
+    const ARTICLE_TYPE_REPRODUCED = 1;
+    const ARTICLE_TYPE_TRANSLATION = 2;
+
     protected $guarded    = [];
 }

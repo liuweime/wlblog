@@ -52,24 +52,39 @@ class ArticleController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
+     * @param  int $id
      * @return \Illuminate\Http\Response
+     * @throws \App\Exceptions\ArticleException
      */
     public function show($id)
     {
         //
+        $result = $this->articleService->getArticle($id);
+        return response()->json([
+            'code' => 0,
+            'info' => $result,
+            'msg' => 'ok'
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @param ArticleRequest $articleRequest
+     * @param  int $id
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \App\Exceptions\ArticleException
+     * @throws \App\Exceptions\CategoryException
      */
-    public function update(Request $request, $id)
+    public function update(ArticleRequest $articleRequest, $id)
     {
         //
+        $result = $this->articleService->saveArticle($articleRequest, $id);
+        return response()->json([
+            'code' => 0,
+            'info' => $result,
+            'msg' => 'ok'
+        ]);
     }
 
     /**

@@ -29,10 +29,11 @@ class ArticleRepository
     public function isExistsTitle(string $title, int $authorId) : bool
     {
         return is_null(
-            $this->getOneArticleByCondition([
+            $this->article->where([
                 ['article_title', $title],
-                ['author_id', $authorId]
-            ], ['id'])
+                ['author_id', $authorId],
+                ['article_status', Article::ARTICLE_PUBLIS]
+            ])->select('id')->first()
         ) ? false : true;
     }
 
@@ -44,23 +45,47 @@ class ArticleRepository
     public function isExistsArticleByArticleId(int $articleId) : bool
     {
         return is_null(
-            $this->getOneArticleByCondition([
-                ['id', $articleId]
-            ], ['id'])
+            $this->article->where([
+                ['id', $articleId],
+                ['article_status', Article::ARTICLE_PUBLIS]
+            ])->select('id')->first()
         ) ? false : true;
     }
 
     /**
-     * @param array $condition
-     * @param array $filter
+     * 根据id获取一篇文章
+     * @param int $articleId
+     * @param int $authorId
      * @return mixed
      */
-    public function getOneArticleByCondition(array $condition, array $filter = [])
+    public function getOneArticleById(int $articleId, int $authorId = 0)
     {
-        if ($filter && is_array($filter)) {
-            $this->article->select($filter);
+        $condition = [];
+        $condition[] = ['id', $articleId];
+        $condition[] = ['article_status', Article::ARTICLE_PUBLIS];
+        if ($authorId) {
+            $condition[] = ['author_id', $authorId];
         }
         return $this->article->where($condition)->first();
+    }
+
+    /**
+     * 根据作者id获取文章
+     * @param int $authorId
+     * @return mixed
+     */
+    public function getArticleByAuthorId(int $authorId)
+    {
+        return $this->article->from('articles AS a')->where([
+            ['author_id', $authorId],
+            ['article_status', Article::ARTICLE_PUBLIS]
+        ])->leftJoin('categorys AS c', function ($join) {
+            $join->on('a.category_id', '=', 'c.id');
+        })->select([
+            'ia.d','author_id','author_name','a.category_id','c.category_name',
+            'article_title','article_tag','is_show_comment','article_status',
+            'article_type','publish_time','created_at','updated_at'
+        ])->get();
     }
 
     /**
@@ -74,11 +99,14 @@ class ArticleRepository
         if (empty($articleArr['article_title'])) {
             throw new ArticleException(['ARTICLE_TITLE_NOT_EMPTY']);
         }
+        if (empty($articleArr['author_id']) || empty($articleArr['author_name'])) {
+            throw new ArticleException(['AUTHOR_NOT_EMPTY']);
+        }
         $this->article->article_title = $articleArr['article_title'];
         $this->article->author_id = $articleArr['author_id'];
         $this->article->author_name = $articleArr['author_name'];
-        $this->article->category_id = $articleArr['category_id'];
-        $this->article->article_tag = $articleArr['article_tag'];
+        $this->article->category_id = !empty($articleArr['category_id'])? : 0;
+        $this->article->article_tag = !empty($articleArr['article_tag'])? : '';
         $this->article->is_show_comment = isset($articleArr['is_show_comment']) ?
             $articleArr['is_show_comment'] : 1;
         $this->article->article_status = $articleArr['article_status'] === Article::ARTICLE_DRFAT ?
