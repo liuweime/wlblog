@@ -7,7 +7,7 @@ use App\Services\CommentService;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
-class CommitController extends Controller
+class CommentController extends Controller
 {
     private $commentService;
 
@@ -27,31 +27,41 @@ class CommitController extends Controller
     }
 
     /**
-     * 添加一个新的评论/回复
-     *
-     * @param  CommentRequest  $commentRequest
-     * @return \Illuminate\Http\Response
+     * Add a new comment or reply
+     * @param CommentRequest $commentRequest
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \App\Exceptions\PostException
      */
     public function store(CommentRequest $commentRequest)
     {
+        $commentId = $commentRequest->input('comment_id');
         //
+        if (isset($commentId)) {
+            $result = $this->commentService->createReply($commentRequest);
+        } else {
+            $result = $this->commentService->createComment($commentRequest);
+        }
 
         return response()->json([
-
+            'code' => '0',
+            'info' => $result,
+            'msg' => 'ok'
         ]);
     }
 
     /**
-     * 获取指定文章下的评论
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function show($id)
+    public function show(int $id)
     {
         //
-        return response()->json([
+        $result = $this->commentService->getComments($id);
 
+        return response()->json([
+            'code' => '0',
+            'info' => $result,
+            'msg' => 'ok'
         ]);
     }
 
@@ -79,8 +89,12 @@ class CommitController extends Controller
     public function destroy($id)
     {
         //
-        return response()->json([
 
+        $result = $this->commentService->destroy($id);
+        return response()->json([
+            'code' => '0',
+            'info' => $result,
+            'msg' => 'ok'
         ]);
     }
 }
