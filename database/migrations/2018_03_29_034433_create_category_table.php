@@ -19,9 +19,9 @@ class CreateCategoryTable extends Migration
             $table->integer('lft')->nullable(false)->default(0)->index()->comment('左叶');
             $table->integer('rgt')->nullable(false)->default(0)->index()->comment('右叶');
             $table->integer('depth')->nullable(false)->default(0)->comment('深度');
-            $table->string('category_name', 20)->nullable(false)->default('')->comment('分类名称');
-            $table->string('category_alias' , 20)->nullable(false)->default('')->comment('分类别名');
-            $table->string('category_desc' , 120)->default('')->comment('分类描述');
+            $table->string('name', 20)->nullable(false)->default('')->comment('分类名称');
+            $table->string('alias' , 20)->nullable(false)->default('')->comment('分类别名');
+            $table->string('desc' , 120)->default('')->comment('分类描述');
             $table->timestamps();
         });
     }
