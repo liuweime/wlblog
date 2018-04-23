@@ -9,11 +9,10 @@
 namespace App\Services;
 
 
+
 use App\Exceptions\PostException;
 use App\Http\Requests\CommentRequest;
-use App\Http\Resources\PostResource;
 use App\Http\Resources\PostsCollection;
-use App\Model\Comment;
 use App\Repositorys\CommentRepository;
 
 class CommentService

@@ -13,6 +13,7 @@ use App\Model\Comment;
 
 class CommentRepository
 {
+
     /**
      * @var $comment Comment
      */
