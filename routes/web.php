@@ -14,6 +14,7 @@
 Route::get('/', function () {
     return view('welcome');
 });
+Route::get('/article/archive', 'Api\articleController@archive')->name('article.archive');
 Route::resource('article', 'Api\articleController');
 Route::resource('comment', 'Api\CommentController', ['except' => [
     'index', 'create', 'edit', 'update'

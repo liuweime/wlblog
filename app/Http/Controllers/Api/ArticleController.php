@@ -20,6 +20,17 @@ class ArticleController extends Controller
         $this->articleService = $articleService;
     }
 
+    public function archive()
+    {
+        $result = $this->articleService->getArticleList();
+
+        return response()->json([
+            'code' => 0,
+            'info' => $result,
+            'msg' => 'ok'
+        ]);
+    }
+    
     /**
      * Display a listing of the resource.
      *

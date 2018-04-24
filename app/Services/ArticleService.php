@@ -12,6 +12,7 @@ namespace App\Services;
 use App\Exceptions\ArticleException;
 use App\Exceptions\CategoryException;
 use App\Http\Requests\ArticleRequest;
+use App\Http\Resources\ArticleCollection;
 use App\Model\Article;
 use App\Repositorys\ArticleRepository;
 use App\Repositorys\CategoryRepository;
@@ -122,18 +123,18 @@ class ArticleService
     }
 
     /**
-     * @throws ArticleException
+     * 获取文章列表
+     * @param int $page
+     * @return ArticleCollection|null
      */
-    public function getArticleList()
+    public function getArticleList($page = 5)
     {
-        $user = Auth::user();
-
-        $articleList = $this->articleRepository->getArticleByAuthorId($user['user_id']);
-        foreach ($articleList as $key => $article) {
-            $article = $this->parseArticleData($article);
-
-            $articleList[$key] = $article;
+        $list = $this->articleRepository->getArticleList($page);
+        if (empty($list)) {
+            return null;
         }
+
+        return new ArticleCollection($list);
     }
 
     /**
