@@ -68,7 +68,7 @@ class CommentRepository
      */
     public function getCommentsByArticleId(int $article_id)
     {
-        return $this->comment->where('tid', $article_id)->published()->simplePaginate(5);
+        return $this->comment->where('tid', $article_id)->showed()->simplePaginate(5);
     }
 
     /**
