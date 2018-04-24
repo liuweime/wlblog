@@ -15,6 +15,6 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::resource('comment', 'Home\CommentController', ['except' => [
-    'index', 'create', 'edit', 'update', 'destroy'
+Route::resource('comment', 'Api\CommentController', ['except' => [
+    'index', 'create', 'edit', 'update'
 ]]);
