@@ -31,9 +31,7 @@ class CategoryRepository
      */
     public function isExistsCategoryId(int $categoryId) : bool
     {
-        return is_null(
-            $this->category->where('id', $categoryId)->select('id')->first()
-        ) ? false : true;
+        return $this->category->where('id', $categoryId)->exists();
     }
 
     /**

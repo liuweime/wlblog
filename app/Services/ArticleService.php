@@ -13,6 +13,7 @@ use App\Exceptions\ArticleException;
 use App\Exceptions\CategoryException;
 use App\Http\Requests\ArticleRequest;
 use App\Http\Resources\ArticleCollection;
+use App\Http\Resources\ArticleResource;
 use App\Model\Article;
 use App\Repositorys\ArticleRepository;
 use App\Repositorys\CategoryRepository;
@@ -65,7 +66,6 @@ class ArticleService
         // 创建文章
         $articleArr = $articleRequest->all();
         $articleArr['author_id'] = $userInfo['user_id'];
-        $articleArr['author_name'] = $userInfo['user_name'];
         $bool = $this->articleRepository->createArticle($articleArr);
         if (false === $bool) {
             throw new ArticleException(['CREATE_ARTICLE_ERROR']);
@@ -80,6 +80,7 @@ class ArticleService
     /**
      * 保存文章内容
      * @param ArticleRequest $articleRequest
+     * @param int $articleId
      * @return bool
      * @throws ArticleException
      * @throws CategoryException
@@ -87,6 +88,7 @@ class ArticleService
      */
     public function saveArticle(ArticleRequest $articleRequest, int $articleId) : bool
     {
+        // TODO 权限判断
         $user = Auth::user();
         // 判断article_id是否存在
         $articleOld = $this->articleRepository->getOneArticleById($articleId, $user['user_id']);
@@ -97,14 +99,17 @@ class ArticleService
         // 判断分类是否修改
         if (!empty($articleRequest->input('category_id')) &&
             $articleOld->category_id !== $articleRequest->input('category_id')) {
+
             // 检测分类是否合法
             $bool = $this->categoryRepository->isExistsCategoryId($articleRequest->input('category_id'));
+
             if (false === $bool) {
                 throw new CategoryException(['CATEGORY_NOT_EXISTS', $articleRequest->input('category_id')]);
             }
         }
-        $articleArr = $articleRequest->all();
-        $bool = $this->articleRepository->saveArticle($articleOld, $articleArr);
+
+        $articleArray = $articleRequest->all();
+        $bool = $this->articleRepository->saveArticle($articleOld, $articleArray);
         if (false === $bool) {
             throw new ArticleException(['SAVE_ARTICLE_ERROR']);
         }
@@ -138,25 +143,34 @@ class ArticleService
     }
 
     /**
-     * @param int $id
+     * 获取指定文章
+     * @param int $articleId
      * @return mixed
      * @throws ArticleException
      */
-    public function getArticle(int $id)
+    public function getArticle(int $articleId)
     {
         // 获取文章
-        $article = $this->articleRepository->getOneArticleById($id);
+        $article = $this->articleRepository->getOneArticleById($articleId);
         if (is_null($article)) {
             throw new ArticleException(['ARTICLE_NOT_FOUND']);
         }
-        // 获取文章分类
-        $categoryName = $this->categoryRepository->getCategoryNameById($article->category_id);
-        $article->category_name = '';
-        if (!is_null($categoryName)) {
-            $article->category_name = $categoryName;
-        }
+        $article = ArticleResource::collection($article);
+        // 获取文章内容
+        $article->content = $this->readMakrdownFileContent($article->author_name, $article->title);
 
         return $article;
+    }
+
+    /**
+     * 删除指定文章
+     * @param int $articleId
+     * @return bool
+     */
+    public function deleteArticle(int $articleId)
+    {
+        // TODO 权限判断
+        return $this->articleRepository->destory($articleId, Auth::id());
     }
 
     /**

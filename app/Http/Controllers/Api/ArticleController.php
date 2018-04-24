@@ -20,6 +20,10 @@ class ArticleController extends Controller
         $this->articleService = $articleService;
     }
 
+    /**
+     * 归档文章列表
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function archive()
     {
         $result = $this->articleService->getArticleList();
@@ -30,7 +34,7 @@ class ArticleController extends Controller
             'msg' => 'ok'
         ]);
     }
-    
+
     /**
      * Display a listing of the resource.
      *
@@ -47,10 +51,10 @@ class ArticleController extends Controller
      * @return \Illuminate\Http\JsonResponse
      * @throws \App\Exceptions\ArticleException
      * @throws \App\Exceptions\CategoryException
+     * @throws \Exception
      */
     public function store(ArticleRequest $articleRequest)
     {
-        //
         $result = $this->articleService->createArticle($articleRequest);
 
         return response()->json([
@@ -69,8 +73,8 @@ class ArticleController extends Controller
      */
     public function show($id)
     {
-        //
         $result = $this->articleService->getArticle($id);
+
         return response()->json([
             'code' => 0,
             'info' => $result,
@@ -86,11 +90,12 @@ class ArticleController extends Controller
      * @return \Illuminate\Http\JsonResponse
      * @throws \App\Exceptions\ArticleException
      * @throws \App\Exceptions\CategoryException
+     * @throws \Exception
      */
     public function update(ArticleRequest $articleRequest, $id)
     {
-        //
         $result = $this->articleService->saveArticle($articleRequest, $id);
+
         return response()->json([
             'code' => 0,
             'info' => $result,
@@ -106,6 +111,12 @@ class ArticleController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $result = $this->articleService->deleteArticle($id);
+
+        return response()->json([
+            'code' => 0,
+            'info' => $result,
+            'msg' => 'ok'
+        ]);
     }
 }
