@@ -129,12 +129,13 @@ class ArticleService
 
     /**
      * 获取文章列表
+     * @param array $filter
      * @param int $page
      * @return ArticleCollection|null
      */
-    public function getArticleList($page = 5)
+    public function getArticleList(array $filter = [], $page = 5)
     {
-        $list = $this->articleRepository->getArticleList($page);
+        $list = $this->articleRepository->getArticleList($filter, $page);
         if (empty($list)) {
             return null;
         }

@@ -46,25 +46,6 @@ class ArticleController extends Controller
     }
 
     /**
-     * 文章创建
-     * @param ArticleRequest $articleRequest
-     * @return \Illuminate\Http\JsonResponse
-     * @throws \App\Exceptions\ArticleException
-     * @throws \App\Exceptions\CategoryException
-     * @throws \Exception
-     */
-    public function store(ArticleRequest $articleRequest)
-    {
-        $result = $this->articleService->createArticle($articleRequest);
-
-        return response()->json([
-            'code' => 0,
-            'info' => $result,
-            'msg' => 'ok'
-        ]);
-    }
-
-    /**
      * Display the specified resource.
      *
      * @param  int $id
@@ -74,44 +55,6 @@ class ArticleController extends Controller
     public function show($id)
     {
         $result = $this->articleService->getArticle($id);
-
-        return response()->json([
-            'code' => 0,
-            'info' => $result,
-            'msg' => 'ok'
-        ]);
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param ArticleRequest $articleRequest
-     * @param  int $id
-     * @return \Illuminate\Http\JsonResponse
-     * @throws \App\Exceptions\ArticleException
-     * @throws \App\Exceptions\CategoryException
-     * @throws \Exception
-     */
-    public function update(ArticleRequest $articleRequest, $id)
-    {
-        $result = $this->articleService->saveArticle($articleRequest, $id);
-
-        return response()->json([
-            'code' => 0,
-            'info' => $result,
-            'msg' => 'ok'
-        ]);
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        $result = $this->articleService->deleteArticle($id);
 
         return response()->json([
             'code' => 0,

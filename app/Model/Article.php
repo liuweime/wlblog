@@ -37,4 +37,14 @@ class Article extends Model
     {
         return $query->where('status', self::ARTICLE_PUBLIS);
     }
+
+    public function category()
+    {
+        return $this->hasOne(Category::class);
+    }
+
+    public function scopePublished($query)
+    {
+        return $query->where('status', self::ARTICLE_PUBLIS);
+    }
 }

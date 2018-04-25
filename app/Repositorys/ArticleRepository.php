@@ -29,10 +29,10 @@ class ArticleRepository
     public function isExistsTitle(string $title, int $authorId) : bool
     {
         return $this->article
-                    ->where('title', $title)
-                    ->where('author_id', $authorId)
-                    ->published()
-                    ->exists();
+            ->where('title', $title)
+            ->where('author_id', $authorId)
+            ->published()
+            ->exists();
     }
 
     /**
@@ -72,15 +72,32 @@ class ArticleRepository
 
     /**
      * 获取文章列表
+     * @param array $filter
      * @param int $page
      * @return mixed
      */
-    public function getArticleList($page = 5)
+    public function getArticleList(array $filter = [], $page = 5)
     {
-        return $this->article
-                    ->orderBy('created_at', 'desc')
-                    ->published()
-                    ->simplePaginate($page);
+        $builder = $this->article;
+        if (isset($filter['title'])) {
+            $builder = $builder->where('title', 'like', $filter['title'] . '%');
+        }
+        if (isset($filter['category'])) {
+            $builder = $builder->where('category_id', $filter['category']);
+        }
+        if (isset($filter['status'])) {
+            $builder = $builder->where('status', $filter['status']);
+        } else {
+            $builder = $builder->published();
+        }
+        if (isset($filter['author'])) {
+            $builder = $builder->from('articles as a')->leftJoin('users as u', function ($join) {
+                $join->on('a.author_id', '=', 'u.id');
+            })->where('u.name', 'like', $filter['author'] . '%')->select('a.*');
+        }
+
+        return $builder->orderBy('created_at', 'desc')
+            ->simplePaginate($page);
     }
 
     /**
