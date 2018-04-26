@@ -24,23 +24,13 @@ class Article extends Model
     // 文章对评论是一对多
     public function comment()
     {
-        return $this->hasMany(Comment::class);
+        return $this->hasMany(Comment::class, 'tid');
     }
 
     // 文章对用户是多对一
     public function user()
     {
         return $this->belongsTo(User::class,'author_id');
-    }
-
-    public function scopePublished($query)
-    {
-        return $query->where('status', self::ARTICLE_PUBLIS);
-    }
-
-    public function category()
-    {
-        return $this->hasOne(Category::class);
     }
 
     public function scopePublished($query)

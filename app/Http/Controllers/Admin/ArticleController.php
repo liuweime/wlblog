@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Requests\ArticleRequest;
+use App\Http\Resources\ArticleCollection;
 use App\Services\ArticleService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -20,15 +21,11 @@ class ArticleController extends Controller
     }
 
     /**
-     * Display a listing of the resource.
-     *
-     * @return void
+     * 搜索文章列表
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
-    public function index()
-    {
-
-    }
-
     public function search(Request $request)
     {
         $filter = $request->all();
@@ -36,7 +33,7 @@ class ArticleController extends Controller
 
         return response()->json([
             'code' => 0,
-            'info' => $result,
+            'info' => new ArticleCollection($result),
             'msg' => 'ok'
         ]);
     }
@@ -49,6 +46,7 @@ class ArticleController extends Controller
     public function create()
     {
         //
+        return ['建立'];
     }
 
     /**
@@ -76,7 +74,7 @@ class ArticleController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(int $id)
     {
         //
     }
@@ -87,9 +85,10 @@ class ArticleController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(int $id)
     {
         //
+        echo '编辑';
     }
 
     /**
@@ -119,7 +118,7 @@ class ArticleController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(int $id)
     {
         $result = $this->articleService->deleteArticle($id);
 

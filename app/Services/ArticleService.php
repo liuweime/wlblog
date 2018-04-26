@@ -72,7 +72,7 @@ class ArticleService
         }
 
         // 文章添加成功 生成md文件
-        $this->createMarkdownFile($userInfo['user_name'], $title, $articleArr['article_content']);
+        createMarkdownFile($userInfo['user_name'], $title, $articleArr['article_content']);
 
         return $bool;
     }
@@ -119,28 +119,35 @@ class ArticleService
         if (!empty($articleArr['article_title'])
             && $articleArr['article_title'] !== $articleOld->article_title) {
 
-            $this->renameMarkdownFile($articleOld->author_name, $articleOld->article_title, $articleArr['article_title']);
-
+            renameMarkdownFile($articleOld->author_name, $articleOld->article_title, $articleArr['article_title']);
             $title = $articleArr['article_title'];
         }
 
-        return $this->createMarkdownFile($articleOld->author_name, $title, $articleArr['article_content']);
+        return createMarkdownFile($articleOld->author_name, $title, $articleArr['article_content']);
     }
 
     /**
      * 获取文章列表
      * @param array $filter
+     * @param bool $need_content
      * @param int $page
      * @return ArticleCollection|null
+     * @throws Exception
      */
-    public function getArticleList(array $filter = [], $page = 5)
+    public function getArticleList(array $filter = [], $need_content = false, $page = 5)
     {
         $list = $this->articleRepository->getArticleList($filter, $page);
         if (empty($list)) {
             return null;
         }
 
-        return new ArticleCollection($list);
+        if ($need_content) {
+            foreach ($list as $article) {
+                $article->content = readMarkdownFileContent($article->user->name, $article->title);
+            }
+        }
+
+        return $list;
     }
 
     /**
@@ -148,6 +155,7 @@ class ArticleService
      * @param int $articleId
      * @return mixed
      * @throws ArticleException
+     * @throws Exception
      */
     public function getArticle(int $articleId)
     {
@@ -156,9 +164,9 @@ class ArticleService
         if (is_null($article)) {
             throw new ArticleException(['ARTICLE_NOT_FOUND']);
         }
-        $article = ArticleResource::collection($article);
+
         // 获取文章内容
-        $article->content = $this->readMakrdownFileContent($article->author_name, $article->title);
+        $article->content = readMarkdownFileContent($article->user->name, $article->title, false);
 
         return $article;
     }
@@ -178,7 +186,7 @@ class ArticleService
      * 格式化文章内容
      * @param \stdClass $article
      * @return \stdClass
-     * @throws ArticleException
+     * @throws Exception
      */
     private function parseArticleData(\stdClass $article)
     {
@@ -203,93 +211,12 @@ class ArticleService
         }
         // 获取文章内容
         $user = Auth::user();
-        $content = $this->readMakrdownFileContent($user['user_name'], $article->article_title);
+        $content = readMarkdownFileContent($user['user_name'], $article->article_title);
         $article->content = '';
         if (!empty($content)) {
             $article->content = $content;
         }
 
         return $article;
-    }
-
-    /**
-     * 生成markdown文件
-     *
-     * @param string $username
-     * @param string $title
-     * @param string $content
-     * @return bool
-     * @throws Exception
-     */
-    protected function createMarkdownFile(string $username, string $title, string $content) : bool
-    {
-        try {
-            $fileDir = $this->getMarkdownFilePath($username);
-            if (false === is_dir($fileDir)) {
-                mkdir($fileDir, 755);
-            }
-            $filepath = $fileDir . $title . '.md';
-
-            return false === file_put_contents($filepath, $content, LOCK_EX)
-                ? false : true;
-        } catch (\Exception $exception) {
-            throw new Exception($exception->getMessage());
-        }
-    }
-
-    /**
-     * 获取markdown文件内容
-     * @param string $username
-     * @param string $title
-     * @return string
-     * @throws ArticleException
-     */
-    protected function readMakrdownFileContent(string $username, string $title) : string
-    {
-        $filedir = $this->getMarkdownFilePath($username);
-        $filepath = $filedir . $title . '.md';
-
-        if (!file_exists($filepath)) {
-            throw new ArticleException(['MARKDOWN_FILE_NOT_FOUND']);
-        }
-
-        return file_get_contents($filepath);
-    }
-
-    /**
-     * @param string $username
-     * @return string
-     */
-    protected function getMarkdownFilePath(string $username) : string
-    {
-        $uploadConfig = config('upload');
-        return public_path() . DIRECTORY_SEPARATOR . trim($uploadConfig['article'], DIRECTORY_SEPARATOR)
-            . md5($username) . DIRECTORY_SEPARATOR;
-    }
-
-    /**
-     * @param string $username
-     * @param string $oldtitle
-     * @param string $newtitle
-     * @throws Exception
-     */
-    protected function renameMarkdownFile(string $username, string $oldtitle, string $newtitle)
-    {
-        try {
-            // 文件路径
-            $dir = $this->getMarkdownFilePath($username);
-            if (false === is_dir($dir)) {
-                mkdir($dir, 755);
-            }
-            $oldfile = $dir . $oldtitle . '.md';
-            $newfile = $dir . $newtitle . '.md';
-
-            $bool = rename($oldfile, $newfile);
-            if (false === $bool) {
-                throw new \Exception('rename old title error');
-            }
-        } catch (\Exception $exception) {
-            throw new Exception($exception->getMessage());
-        }
     }
 }

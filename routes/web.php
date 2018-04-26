@@ -14,26 +14,26 @@
 Route::get('/', function () {
     return view('welcome');
 });
-Route::get('/article/archive', 'Api\articleController@archive')->name('article.archive');
-Route::resource('article', 'Api\articleController', ['except' => [
-    'create','store','edit','update','destroy'
-]]);
 
-Route::group(['prefix' => 'admin'], function () {
+Route::group(['prefix' => 'article'], function () {
+    Route::get('/archive', 'Api\articleController@archive')->name('article.archive');
+    Route::get('/', 'Api\articleController@index')->name('article.index');
+    Route::get('/{id}', 'Api\articleController@show')->name('article.show');
+});
 
+Route::group([
+    'middleware' => 'auth',
+    'prefix' => 'admin'
+], function () {
     Route::group(['prefix' => 'article'], function () {
-        // 获取文章列表
-        Route::get('/', 'Admin\articleController@index');
-        // 搜索
-        Route::post('/search', 'Admin\articleController@search');
-        // 获取文章详细
-        Route::get('/{id}', 'Admin\articleController@show');
-        // 更新文章
-        Route::put('/{id}', 'Admin\articleController@update');
-        // 删除文章
-        Route::delete('/{id}', 'Admin\articleController@destroy');
-        // 创建文章
-        Route::post('/', 'Admin\articleController@store');
+        Route::get('/create', 'Admin\articleController@create')->name('admin.article.create');
+        Route::get('/edit/{id}', 'Admin\articleController@edit')->name('admin.article.edit');
+        Route::get('/', 'Admin\articleController@search')->name('admin.article.index');
+        Route::post('/search', 'Admin\articleController@search')->name('admin.article.index');
+        Route::get('/{id}', 'Admin\articleController@show')->name('admin.article.show');
+        Route::put('/{id}', 'Admin\articleController@update')->name('admin.article.update');
+        Route::delete('/{id}', 'Admin\articleController@destroy')->name('admin.article.destory');
+        Route::post('/', 'Admin\articleController@store')->name('admin.article.store');
     });
 });
 

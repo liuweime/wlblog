@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Requests\ArticleRequest;
+use App\Http\Resources\ArticleCollection;
+use App\Http\Resources\ArticleResource;
 use App\Services\ArticleService;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -23,6 +25,7 @@ class ArticleController extends Controller
     /**
      * 归档文章列表
      * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function archive()
     {
@@ -30,35 +33,43 @@ class ArticleController extends Controller
 
         return response()->json([
             'code' => 0,
-            'info' => $result,
+            'info' => new ArticleCollection($result),
             'msg' => 'ok'
         ]);
     }
 
     /**
-     * Display a listing of the resource.
+     * 首页文章
      *
-     * @return \Illuminate\Http\Response
+     * @return ArticleCollection
+     * @throws \Exception
      */
     public function index()
     {
         //
+        $result = $this->articleService->getArticleList([], true);
+
+        return response()->json([
+            'code' => 0,
+            'info' => new ArticleCollection($result),
+            'msg' => 'ok'
+        ]);
     }
 
     /**
      * Display the specified resource.
      *
      * @param  int $id
-     * @return \Illuminate\Http\Response
+     * @return ArticleResource
      * @throws \App\Exceptions\ArticleException
      */
-    public function show($id)
+    public function show(int $id)
     {
         $result = $this->articleService->getArticle($id);
 
         return response()->json([
             'code' => 0,
-            'info' => $result,
+            'info' => new ArticleResource($result),
             'msg' => 'ok'
         ]);
     }
