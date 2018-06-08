@@ -43,4 +43,9 @@ class CategoryRepository
     {
         return $this->category->where('id', $categoryId)->select('category_name')->first();
     }
+
+    public function getAllCategories()
+    {
+        return $this->category->get();
+    }
 }

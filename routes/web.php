@@ -22,7 +22,7 @@ Route::group(['prefix' => 'article'], function () {
 });
 
 Route::group([
-    'middleware' => 'auth',
+
     'prefix' => 'admin'
 ], function () {
     Route::group(['prefix' => 'article'], function () {
@@ -35,6 +35,8 @@ Route::group([
         Route::delete('/{id}', 'Admin\articleController@destroy')->name('admin.article.destory');
         Route::post('/', 'Admin\articleController@store')->name('admin.article.store');
     });
+
+    Route::resource('category', 'Admin\CategoryController');
 });
 
 Route::resource('comment', 'Api\CommentController', ['except' => [
