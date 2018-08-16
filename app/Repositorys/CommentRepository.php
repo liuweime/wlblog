@@ -39,12 +39,10 @@ class CommentRepository
         $this->comment->nickname = trim($comment['nickname']);
         $this->comment->email = trim($comment['email']);
         $this->comment->content = trim($comment['content']);
+        $this->comment->fid = 0;
         if (isset($comment['comment_id'])) {
             $this->comment->fid = $comment['comment_id'];
-        } else {
-            $this->comment->fid = 0;
         }
-
         $this->comment->save();
 
         return $this->comment;
@@ -57,7 +55,7 @@ class CommentRepository
      */
     public function isExistCommet(int $commentId) : bool
     {
-        return $this->comment->where('id', $commentId)->published()->exists();
+        return $this->comment->where('id', $commentId)->showed()->exists();
     }
 
 
@@ -68,7 +66,10 @@ class CommentRepository
      */
     public function getCommentsByArticleId(int $article_id)
     {
-        return $this->comment->where('tid', $article_id)->showed()->simplePaginate(5);
+        return $this->comment->where([
+            ['tid', $article_id],
+            ['fid', 0]
+        ])->showed()->simplePaginate(5);
     }
 
     /**
@@ -78,9 +79,14 @@ class CommentRepository
      */
     public function getPostByPostId(int $postId)
     {
-        return $this->comment->published()->find($postId);
+        return $this->comment->showed()->find($postId);
     }
 
+    /**
+     * 删除评论
+     * @param int $postId
+     * @return bool
+     */
     public function destroy(int $postId)
     {
         $comment = $this->getPostByPostId($postId);

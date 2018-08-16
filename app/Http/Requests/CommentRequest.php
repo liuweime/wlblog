@@ -25,7 +25,6 @@ class CommentRequest extends FormRequest
     {
         return [
             //
-            'comment_id' => 'bail|integer',
             'article_id' => 'bail|required|integer',
             'nickname' => 'bail|required|string|max:20',
             'email' => 'bail|required|string|email',

@@ -12,6 +12,7 @@ namespace App\Services;
 
 use App\Exceptions\PostException;
 use App\Http\Requests\CommentRequest;
+use App\Http\Requests\ReplyRequest;
 use App\Http\Resources\PostsCollection;
 use App\Repositorys\CommentRepository;
 
@@ -41,14 +42,14 @@ class CommentService
 
     /**
      * Create a new reply post
-     * @param CommentRequest $commentRequest
+     * @param ReplyRequest $request
      * @return \App\Model\Comment
      * @throws PostException
      */
-    public function createReply(CommentRequest $commentRequest)
+    public function createReply(ReplyRequest $request)
     {
         // To judge whether the comment exists
-        $commentId = $commentRequest->input('comment_id');
+        $commentId = $request->input('comment_id');
         if (!$commentId) {
             throw new PostException(['COMMENT_UNSPECIFIED']);
         }
@@ -56,8 +57,7 @@ class CommentService
         if (false === $bool) {
             throw new PostException(['COMMENT_NOT_FOUND', $commentId]);
         }
-
-        $reply = $commentRequest->all();
+        $reply = $request->all();
 
         return $this->commentRepository->createPost($reply);
     }

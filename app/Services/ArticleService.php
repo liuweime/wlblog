@@ -50,7 +50,8 @@ class ArticleService
     {
         $userInfo = Auth::user();
 
-        $title = $articleRequest->input('article_title');
+
+        $title = $articleRequest->input('title');
         // 判断文章标题是否重复
         $bool = $this->articleRepository->isExistsTitle($title, $userInfo['user_id']);
         if (false === $bool) {
@@ -72,7 +73,7 @@ class ArticleService
         }
 
         // 文章添加成功 生成md文件
-        createMarkdownFile($userInfo['user_name'], $title, $articleArr['article_content']);
+        createMarkdownFile($userInfo['user_name'], $title, $articleArr['content']);
 
         return $bool;
     }
@@ -127,27 +128,44 @@ class ArticleService
     }
 
     /**
-     * 获取文章列表
-     * @param array $filter
-     * @param bool $need_content
+     * 获取归档文章列表
      * @param int $page
-     * @return ArticleCollection|null
+     * @return mixed
+     */
+    public function getArchiveArticle(int $page = 20)
+    {
+
+        return $this->articleRepository->getArticleList([], $page);
+    }
+    
+    /**
+     * 获取首页文章列表
+     * @param int $page
+     * @return mixed|null
      * @throws Exception
      */
-    public function getArticleList(array $filter = [], $need_content = false, $page = 5)
+    public function getFrontArticle(int $page = 5)
     {
-        $list = $this->articleRepository->getArticleList($filter, $page);
-        if (empty($list)) {
-            return null;
-        }
+        $result = $this->articleRepository->getArticleList([], $page);
 
-        if ($need_content) {
-            foreach ($list as $article) {
-                $article->content = readMarkdownFileContent($article->user->name, $article->title);
+        if (!empty($result)) {
+            foreach ($result as $article) {
+                $article->excerpt = readMarkdownFileContent($article->user->name, $article->title, true);
             }
         }
 
-        return $list;
+        return $result;
+    }
+
+    /**
+     * 获取文章列表
+     * @param array $filter
+     * @param int $page
+     * @return mixed
+     */
+    public function getArticleListByFilter(array $filter, int $page = 5)
+    {
+        return $this->articleRepository->getArticleList($filter, $page);
     }
 
     /**
@@ -157,7 +175,7 @@ class ArticleService
      * @throws ArticleException
      * @throws Exception
      */
-    public function getArticle(int $articleId)
+    public function article(int $articleId)
     {
         // 获取文章
         $article = $this->articleRepository->getOneArticleById($articleId);
@@ -180,43 +198,5 @@ class ArticleService
     {
         // TODO 权限判断
         return $this->articleRepository->destory($articleId, Auth::id());
-    }
-
-    /**
-     * 格式化文章内容
-     * @param \stdClass $article
-     * @return \stdClass
-     * @throws Exception
-     */
-    private function parseArticleData(\stdClass $article)
-    {
-        // 文章标签
-        if ($article->article_tag) {
-            $article->article_tag = explode(',', $article->article_tag);
-        }
-        // 类型
-        switch ($article->article_type) {
-            case Article::ARTICLE_TYPE_ORIGINAL:
-                $article->article_type_text = '原创';
-                break;
-            case Article::ARTICLE_TYPE_REPRODUCED:
-                $article->article_type_text = '转载';
-                break;
-            case Article::ARTICLE_TYPE_TRANSLATION:
-                $article->article_type_text = '翻译';
-                break;
-            default:
-                $article->article_type_text = '未知';
-                break;
-        }
-        // 获取文章内容
-        $user = Auth::user();
-        $content = readMarkdownFileContent($user['user_name'], $article->article_title);
-        $article->content = '';
-        if (!empty($content)) {
-            $article->content = $content;
-        }
-
-        return $article;
     }
 }

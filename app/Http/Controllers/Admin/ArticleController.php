@@ -29,24 +29,13 @@ class ArticleController extends Controller
     public function search(Request $request)
     {
         $filter = $request->all();
-        $result = $this->articleService->getArticleList($filter);
+        $result = $this->articleService->getArticleListByFilter($filter, 20);
 
         return response()->json([
             'code' => 0,
             'info' => new ArticleCollection($result),
             'msg' => 'ok'
         ]);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-        return ['建立'];
     }
 
     /**
@@ -79,17 +68,6 @@ class ArticleController extends Controller
         //
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(int $id)
-    {
-        //
-        echo '编辑';
-    }
 
     /**
      * Update the specified resource in storage.

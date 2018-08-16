@@ -91,7 +91,7 @@ class ArticleRepository
             $builder = $builder->published();
         }
         if (isset($filter['author'])) {
-            $builder = $builder->from('articles as a')->leftJoin('users as u', function ($join) {
+            $builder = $builder->from('articles as a')->innerJoin('users as u', function ($join) {
                 $join->on('a.author_id', '=', 'u.id');
             })->where('u.name', 'like', $filter['author'] . '%')->select('a.*');
         }
@@ -109,8 +109,7 @@ class ArticleRepository
     {
         $this->article->fill($articleArr);
 
-        $this->article->is_show_comment = isset($articleArr['is_show_comment']) ?
-            $articleArr['is_show_comment'] : 1;
+        $this->article->is_show_comment = isset($articleArr['is_show_comment']) ? $articleArr['is_show_comment'] : 1;
         $this->article->article_status = $articleArr['article_status'] === Article::ARTICLE_DRFAT ?
             Article::ARTICLE_DRFAT : Article::ARTICLE_PUBLIS;
 

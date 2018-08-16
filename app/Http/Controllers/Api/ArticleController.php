@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Requests\ArticleRequest;
 use App\Http\Resources\ArticleCollection;
 use App\Http\Resources\ArticleResource;
+use App\Http\Resources\FrontArticleCollection;
 use App\Services\ArticleService;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -29,11 +30,11 @@ class ArticleController extends Controller
      */
     public function archive()
     {
-        $result = $this->articleService->getArticleList();
+        $result = $this->articleService->getArchiveArticle();
 
         return response()->json([
             'code' => 0,
-            'info' => new ArticleCollection($result),
+            'info' => new FrontArticleCollection($result),
             'msg' => 'ok'
         ]);
     }
@@ -47,11 +48,11 @@ class ArticleController extends Controller
     public function index()
     {
         //
-        $result = $this->articleService->getArticleList([], true);
+        $result = $this->articleService->getFrontArticle();
 
         return response()->json([
             'code' => 0,
-            'info' => new ArticleCollection($result),
+            'info' => new FrontArticleCollection($result),
             'msg' => 'ok'
         ]);
     }
@@ -65,7 +66,7 @@ class ArticleController extends Controller
      */
     public function show(int $id)
     {
-        $result = $this->articleService->getArticle($id);
+        $result = $this->articleService->article($id);
 
         return response()->json([
             'code' => 0,

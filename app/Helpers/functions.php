@@ -36,11 +36,11 @@ function createMarkdownFile(string $username, string $title, string $content) : 
  * 获取markdown文件内容
  * @param string $username
  * @param string $title
- * @param bool $is_summary
+ * @param bool $is_excerpt
  * @return string
  * @throws Exception
  */
-function readMarkdownFileContent(string $username, string $title, $is_summary = false) : string
+function readMarkdownFileContent(string $username, string $title, $is_excerpt = false) : string
 {
     try {
 
@@ -52,11 +52,14 @@ function readMarkdownFileContent(string $username, string $title, $is_summary = 
         }
 
         $content = file_get_contents($filepath);
-        if ($is_summary) {
+        if ($is_excerpt === true) {
             // 获取分割符
             $split_tag = config('blog.split_tag');
             if (mb_strpos($content, $split_tag, 0, 'utf-8') !== false) {
                 $content = mb_substr($content, 0, mb_strpos($content, $split_tag, 0, 'utf-8'), 'utf-8');
+            } else {
+                $content = strip_tags($content);
+                $content = mb_substr($content, 0, 160, 'utf-8');
             }
         }
 

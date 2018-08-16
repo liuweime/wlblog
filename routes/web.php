@@ -15,30 +15,6 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::group(['prefix' => 'article'], function () {
-    Route::get('/archive', 'Api\articleController@archive')->name('article.archive');
-    Route::get('/', 'Api\articleController@index')->name('article.index');
-    Route::get('/{id}', 'Api\articleController@show')->name('article.show');
-});
+Auth::routes();
 
-Route::group([
-
-    'prefix' => 'admin'
-], function () {
-    Route::group(['prefix' => 'article'], function () {
-        Route::get('/create', 'Admin\articleController@create')->name('admin.article.create');
-        Route::get('/edit/{id}', 'Admin\articleController@edit')->name('admin.article.edit');
-        Route::get('/', 'Admin\articleController@search')->name('admin.article.index');
-        Route::post('/search', 'Admin\articleController@search')->name('admin.article.index');
-        Route::get('/{id}', 'Admin\articleController@show')->name('admin.article.show');
-        Route::put('/{id}', 'Admin\articleController@update')->name('admin.article.update');
-        Route::delete('/{id}', 'Admin\articleController@destroy')->name('admin.article.destory');
-        Route::post('/', 'Admin\articleController@store')->name('admin.article.store');
-    });
-
-    Route::resource('category', 'Admin\CategoryController');
-});
-
-Route::resource('comment', 'Api\CommentController', ['except' => [
-    'index', 'create', 'edit', 'update'
-]]);
+Route::get('/home', 'HomeController@index')->name('home');
