@@ -134,8 +134,40 @@ class ArticleService
      */
     public function getArchiveArticle(int $page = 20)
     {
-
         return $this->articleRepository->getArticleList([], $page);
+    }
+
+    /**
+     * 获取分类下文章列表
+     *
+     * @param string $name
+     * @param int $page
+     * @return mixed
+     * @throws CategoryException
+     */
+    public function getArticleByCategoryName(string $name, int $page = 20)
+    {
+        $category = $this->categoryRepository->getCategoryByName($name);
+        if (empty($category)) {
+
+            throw new CategoryException(['CATEGORY_NOT_EXISTS']);
+        }
+
+        return $this->articleRepository->getArticleList([
+            'category' => $category->id
+        ], $page);
+    }
+
+    /**
+     * 根据标签获取文章列表
+     *
+     * @param string $name
+     * @param int $page
+     * @return mixed
+     */
+    public function getArticleByTagName(string $name, int $page = 20)
+    {
+        return $this->articleRepository->getArticleList(['tag' => $name], $page);
     }
     
     /**

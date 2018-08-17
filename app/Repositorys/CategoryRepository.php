@@ -41,11 +41,31 @@ class CategoryRepository
      */
     public function getCategoryNameById(int $categoryId)
     {
-        return $this->category->where('id', $categoryId)->select('category_name')->first();
+        return $this->category->where('id', $categoryId)->select('name')->first();
+    }
+
+    /**
+     * 获取文章分类列表
+     * @return mixed
+     */
+    public function getArticleCategories()
+    {
+        return $this->category->select('id','name')->withCount('article')->get();
     }
 
     public function getAllCategories()
     {
         return $this->category->get();
+    }
+
+    /**
+     * 根据分类名称获取分类
+     *
+     * @param string $name
+     * @return mixed
+     */
+    public function getCategoryByName(string $name)
+    {
+        return $this->category->select('id','name')->where('name', $name)->first();
     }
 }

@@ -20,8 +20,17 @@ class CategoryService
         $this->categoryRepository = $categoryRepository;
     }
 
+    /**
+     * 获取文章分类
+     * @return mixed
+     */
+    public function getFrontArticleCategory()
+    {
+        return $this->categoryRepository->getArticleCategories();
+    }
+
     public function getCategoryList()
     {
-        return $this->categoryRepository->getAllCategories();;
+        return $this->categoryRepository->getAllCategories();
     }
 }

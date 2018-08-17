@@ -95,6 +95,9 @@ class ArticleRepository
                 $join->on('a.author_id', '=', 'u.id');
             })->where('u.name', 'like', $filter['author'] . '%')->select('a.*');
         }
+        if (isset($filter['tag'])) {
+            $builder = $builder->where('tag', 'like', $filter['tag'] . ',%');
+        }
 
         return $builder->orderBy('created_at', 'desc')
             ->simplePaginate($page);

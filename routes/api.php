@@ -29,6 +29,10 @@ Route::group(['prefix' => 'article'], function () {
     Route::get('/', 'Api\articleController@index')->name('article.index');
     // 文章详情
     Route::get('/{id}', 'Api\articleController@show')->name('article.show')->where('id', '[0-9]+');
+    // 分类下文章
+    Route::get('/category/{name}', 'Api\articleController@classifiedArticle')->name('article.classified');
+    // 标签下文章
+    Route::get('/tag/{name}', 'Api\articleController@tagArticle')->name('article.tag');
 });
 /************************************* 评论添加 *************************************/
 Route::group(['prefix' => 'comment'], function () {
@@ -38,6 +42,11 @@ Route::group(['prefix' => 'comment'], function () {
     Route::post('/', 'Api\CommentController@store')->name('comment.store');
     // 添加回复
     Route::post('/reply', 'Api\CommentController@reply')->name('comment.reply');
+});
+/************************************* 文章分类 *************************************/
+Route::group(['prefix' => 'category'], function () {
+    // 分类列表
+    Route::get('/', 'Api\CategoryController@index')->name('category.index');
 });
 
 /**

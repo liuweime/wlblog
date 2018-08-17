@@ -74,4 +74,39 @@ class ArticleController extends Controller
             'msg' => 'ok'
         ]);
     }
+
+    /**
+     * 获取指定分类下文章
+     *
+     * @param string $name
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \App\Exceptions\CategoryException
+     */
+    public function classifiedArticle(string $name)
+    {
+        $result = $this->articleService->getArticleByCategoryName($name);
+
+        return response()->json([
+            'code' => 0,
+            'info' => new FrontArticleCollection($result),
+            'msg' => 'ok'
+        ]);
+    }
+
+    /**
+     * 获取指定标签下文章
+     *
+     * @param string $name
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function tagArticle(string $name)
+    {
+        $result = $this->articleService->getArticleByTagName($name);
+
+        return response()->json([
+            'code' => 0,
+            'info' => new FrontArticleCollection($result),
+            'msg' => 'ok'
+        ]);
+    }
 }
